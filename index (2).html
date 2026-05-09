@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8b7355">
+<title>Dagstructuur</title>
+<link rel="manifest" href="/Dagstructuur/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --parchment: #f5f0e8;
+  --warm-dark: #2c2416;
+  --brown: #8b7355;
+  --brown-light: #b8a485;
+  --brown-pale: #e8dfc8;
+  --green: #4a6741;
+  --green-light: #d4e8d0;
+  --amber: #c4882a;
+  --amber-light: #faecd4;
+  --purple: #5a4a7a;
+  --red-soft: #c45a4a;
+  --text: #2c2416;
+  --text-muted: #7a6a50;
+  --radius: 16px;
+  --bg: #f5f0e8;
+  --card-ochtend: #ede5d4;
+  --card-middag: #ddecd8;
+  --card-avond: #f5ddd8;
+  --card-eten: #e8f0fa;
+  --input-bg: #ffffff;
+  --border: #e8dfc8;
+  --nav-bg: #f5f0e8;
+}
+body.donker {
+  --parchment: #1e1a14;
+  --warm-dark: #e8dfc8;
+  --brown: #c4a87a;
+  --brown-light: #8b7355;
+  --brown-pale: #3a3020;
+  --green: #7ab87a;
+  --green-light: #1e3020;
+  --amber: #e8a84a;
+  --amber-light: #2a2010;
+  --purple: #a090c8;
+  --red-soft: #e07060;
+  --text: #e8dfc8;
+  --text-muted: #9a8a6a;
+  --bg: #1e1a14;
+  --card-ochtend: #2a2418;
+  --card-middag: #1e2818;
+  --card-avond: #2a1e1a;
+  --card-eten: #1a2030;
+  --input-bg: #2a2418;
+  --border: #3a3020;
+  --nav-bg: #18140e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; min-height: 100dvh; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+#app { max-width: 480px; margin: 0 auto; padding: env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0); min-height: 100dvh; display: flex; flex-direction: column; }
+.header { padding: 16px 20px 8px; display: flex; justify-content: space-between; align-items: flex-start; }
+.header-quote { font-family: 'Lora', serif; font-style: italic; font-size: 12px; color: var(--text-muted); max-width: 190px; line-height: 1.5; }
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.header-date { font-size: 11px; color: var(--text-muted); }
+.donker-toggle { background: none; border: 1px solid var(--border); border-radius: 20px; padding: 3px 9px; font-size: 11px; color: var(--text-muted); cursor: pointer; font-family: inherit; }
+.screen { display: none; flex: 1; flex-direction: column; }
+.screen.active { display: flex; }
+.home-title { font-family: 'Lora', serif; font-size: 26px; font-weight: 400; padding: 4px 20px 2px; }
+.home-subtitle { font-size: 13px; color: var(--text-muted); padding: 0 20px 10px; }
+.dag-blokken { padding: 0 12px; flex: 1; overflow-y: auto; }
+.blok { border-radius: var(--radius); margin-bottom: 6px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.blok:active { transform: scale(0.98); }
+.blok-header { display: flex; align-items: center; gap: 10px; padding: 11px 13px; }
+.blok-num { width: 27px; height: 27px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+.blok-info { flex: 1; }
+.blok-title { font-size: 14px; font-weight: 500; }
+.blok-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.blok-status { font-size: 15px; }
+.blok-section { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 13px 3px; color: var(--text-muted); }
+.fase-ochtend { background: var(--card-ochtend); }
+.fase-ochtend .blok-num { background: var(--brown-pale); color: var(--brown); }
+.fase-middag { background: var(--card-middag); }
+.fase-middag .blok-num { background: var(--green-light); color: var(--green); }
+.fase-avond { background: var(--card-avond); }
+.fase-avond .blok-num { color: var(--red-soft); border: 1px solid var(--border); }
+.fase-eten { background: var(--card-eten); }
+.fase-eten .blok-num { background: var(--amber-light); color: var(--amber); }
+.blok.voltooid { opacity: 0.48; }
+.blok.actief { box-shadow: 0 3px 16px rgba(0,0,0,0.13); transform: scale(1.01); }
+.bottom-nav { display: flex; border-top: 1px solid var(--border); background: var(--nav-bg); padding: 6px 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 10px; font-family: inherit; }
+.nav-btn.active { color: var(--brown); }
+.nav-btn svg { width: 20px; height: 20px; }
+.fase-screen { padding: 0; }
+.fase-top { padding: 13px 18px 0; display: flex; align-items: center; gap: 10px; }
+.terug-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; font-family: inherit; font-size: 13px; display: flex; align-items: center; gap: 3px; }
+.fase-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; }
+.fase-content { padding: 10px 18px; flex: 1; overflow-y: auto; }
+.fase-naam { font-family: 'Lora', serif; font-size: 21px; margin-bottom: 4px; }
+.fase-beschrijving { font-size: 13px; color: var(--text-muted); line-height: 1.65; margin-bottom: 8px; }
+.fase-bijbel { font-family: 'Lora', serif; font-style: italic; font-size: 12px; color: var(--text-muted); padding: 7px 11px; border-left: 2px solid var(--brown-light); margin-bottom: 14px; line-height: 1.6; }
+.fase-bijbel-ref { font-size: 10px; opacity: 0.55; margin-top: 2px; font-style: normal; }
+.checklist-sectie { margin-bottom: 12px; }
+.checklist-label { font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 5px; display: block; }
+.check-item { display: flex; align-items: center; gap: 9px; padding: 8px 11px; border-radius: 9px; margin-bottom: 4px; cursor: pointer; user-select: none; }
+.check-item:active { opacity: 0.7; }
+.check-box { width: 19px; height: 19px; border-radius: 5px; border: 1.5px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.12s; }
+.check-box svg { opacity: 0; }
+.check-box.checked svg { opacity: 1; }
+.check-tekst { font-size: 14px; }
+.check-item.checked .check-tekst { opacity: 0.4; text-decoration: line-through; }
+.altijd .check-box { border-color: var(--green); }
+.altijd .check-box.checked { background: var(--green); }
+.optioneel .check-box { border-color: var(--purple); }
+.optioneel .check-box.checked { background: var(--purple); }
+.notitie-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; display: block; }
+.notitie-veld { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; font-family: inherit; font-size: 14px; color: var(--text); resize: none; min-height: 65px; line-height: 1.6; outline: none; transition: border-color 0.15s; }
+.notitie-veld:focus { border-color: var(--brown-light); }
+.notitie-sectie { margin-bottom: 12px; }
+.meting-sectie { margin-bottom: 13px; }
+.meting-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 7px; display: block; }
+.energie-opties { display: flex; gap: 5px; }
+.energie-btn { flex: 1; padding: 7px 2px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--input-bg); cursor: pointer; font-size: 17px; text-align: center; transition: all 0.12s; }
+.energie-btn.selected { border-color: var(--brown); background: var(--brown-pale); }
+.energie-labels { display: flex; justify-content: space-between; margin-top: 3px; }
+.energie-labels span { font-size: 9px; color: var(--text-muted); }
+.emotie-sectie { margin-bottom: 13px; }
+.emotie-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 7px; }
+.emotie-btn { padding: 5px 1px; border-radius: 7px; border: 1.5px solid var(--border); background: var(--input-bg); cursor: pointer; font-size: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1px; transition: all 0.12s; }
+.emotie-btn span { font-size: 8px; color: var(--text-muted); }
+.emotie-btn.selected { border-color: var(--purple); background: rgba(90,74,122,0.1); }
+.intensiteit-wrap { display: none; }
+.intensiteit-wrap.zichtbaar { display: block; }
+.intensiteit-rij { display: flex; gap: 5px; }
+.intensiteit-btn { flex: 1; padding: 7px 3px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--input-bg); cursor: pointer; font-size: 12px; color: var(--text-muted); text-align: center; font-family: inherit; transition: all 0.12s; }
+.intensiteit-btn.selected { border-color: var(--purple); background: rgba(90,74,122,0.1); color: var(--purple); font-weight: 500; }
+.wekker-sectie { background: var(--amber-light); border-radius: 11px; padding: 11px 13px; margin-bottom: 13px; }
+.wekker-label { font-size: 12px; font-weight: 500; color: var(--amber); margin-bottom: 5px; }
+.wekker-input { display: flex; align-items: center; gap: 7px; }
+.wekker-time { padding: 6px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--input-bg); font-family: inherit; font-size: 15px; color: var(--text); outline: none; }
+.wekker-zet { padding: 6px 13px; border-radius: 7px; border: none; background: var(--amber); color: white; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.avond-vraag { margin-bottom: 13px; }
+.avond-vraag-num { font-size: 10px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+.avond-vraag-tekst { font-family: 'Lora', serif; font-size: 15px; margin-bottom: 5px; }
+.klaar-btn { width: 100%; padding: 13px; border-radius: 11px; border: none; font-family: 'Lora', serif; font-size: 15px; cursor: pointer; transition: all 0.15s; margin-top: 5px; margin-bottom: 14px; }
+.klaar-btn:active { transform: scale(0.98); }
+.klaar-btn-ochtend { background: var(--brown); color: white; }
+.klaar-btn-middag { background: var(--green); color: white; }
+.klaar-btn-avond { background: var(--red-soft); color: white; }
+.klaar-btn-eten { background: var(--amber); color: white; }
+.logboek-content { padding: 13px 18px; flex: 1; overflow-y: auto; }
+.log-dag { margin-bottom: 16px; }
+.log-dag-datum { font-family: 'Lora', serif; font-size: 15px; margin-bottom: 5px; color: var(--brown); border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+.log-item { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; line-height: 1.5; }
+.log-item strong { color: var(--text); font-weight: 500; }
+.export-btn { margin: 0 18px 14px; padding: 10px; border-radius: 9px; border: 1px solid var(--brown-light); background: var(--input-bg); color: var(--brown); font-family: inherit; font-size: 13px; cursor: pointer; width: calc(100% - 36px); }
+.leeg-tekst { font-family: 'Lora', serif; font-style: italic; color: var(--text-muted); text-align: center; padding: 40px 20px; font-size: 14px; }
+.inst-content { padding: 13px 18px; flex: 1; overflow-y: auto; }
+.inst-sectie { margin-bottom: 18px; }
+.inst-titel { font-family: 'Lora', serif; font-size: 17px; margin-bottom: 9px; }
+.inst-rij { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.inst-rij-label { font-size: 13px; }
+.inst-rij-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.reset-btn { padding: 7px 14px; border-radius: 7px; border: 1px solid var(--red-soft); background: var(--input-bg); color: var(--red-soft); font-family: inherit; font-size: 13px; cursor: pointer; }
+.deurpost { background: linear-gradient(135deg, #3d2e1a 0%, #5a4530 100%); color: #d4c4a0; padding: 11px 17px; margin: 0 12px 9px; border-radius: var(--radius); text-align: center; }
+.deurpost-tekst { font-family: 'Lora', serif; font-style: italic; font-size: 13px; line-height: 1.6; }
+.deurpost-ref { font-size: 10px; opacity: 0.55; margin-top: 2px; letter-spacing: 0.05em; }
+.voortgang { padding: 0 12px 9px; }
+.voortgang-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.voortgang-fill { height: 100%; background: var(--brown); border-radius: 2px; transition: width 0.4s ease; }
+.voortgang-tekst { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+.screen-titel { font-family: 'Lora', serif; font-size: 20px; padding: 13px 18px 3px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-quote" id="dagquote"></div>
+    <div class="header-right">
+      <div class="header-date" id="dagdatum"></div>
+      <button class="donker-toggle" onclick="toggleDonker()">🌙 Donker</button>
+    </div>
+  </div>
+
+  <div class="screen active" id="screen-home">
+    <div class="home-title">Vandaag</div>
+    <div class="home-subtitle">Één ding tegelijk.</div>
+    <div class="deurpost">
+      <div class="deurpost-tekst">"Slechts één ding is nodig"</div>
+      <div class="deurpost-ref">Lucas 10:42</div>
+    </div>
+    <div class="voortgang">
+      <div class="voortgang-bar"><div class="voortgang-fill" id="voortgang-fill" style="width:0%"></div></div>
+      <div class="voortgang-tekst" id="voortgang-tekst"></div>
+    </div>
+    <div class="dag-blokken" id="dag-blokken"></div>
+    <div class="deurpost" style="margin-top:5px;margin-bottom:10px;">
+      <div class="deurpost-tekst">"Ik heb je in mijn handpalmen gegrift"</div>
+      <div class="deurpost-ref">Jesaja 49:16</div>
+    </div>
+  </div>
+
+  <div class="screen fase-screen" id="screen-fase">
+    <div class="fase-top">
+      <button class="terug-btn" onclick="toonHome()">← Terug</button>
+      <div class="fase-badge" id="fase-badge"></div>
+    </div>
+    <div class="fase-content" id="fase-content"></div>
+  </div>
+
+  <div class="screen" id="screen-logboek">
+    <div class="screen-titel">Logboek</div>
+    <div class="logboek-content" id="logboek-content"></div>
+    <button class="export-btn" onclick="exporteerData()">Exporteer data als JSON</button>
+  </div>
+
+  <div class="screen" id="screen-inst">
+    <div class="screen-titel">Instellingen</div>
+    <div class="inst-content">
+      <div class="inst-sectie">
+        <div class="inst-titel">Over deze app</div>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">Dagstructuur helpt je één fase tegelijk doorlopen. Alles wordt lokaal opgeslagen. Exporteer voor analyse.</div>
+      </div>
+      <div class="inst-sectie">
+        <div class="inst-titel">Data</div>
+        <div class="inst-rij">
+          <div><div class="inst-rij-label">Exporteer logboek</div><div class="inst-rij-sub">JSON voor analyse</div></div>
+          <button class="export-btn" style="width:auto;margin:0;" onclick="exporteerData()">Exporteer</button>
+        </div>
+        <div class="inst-rij" style="border-bottom:none;padding-top:12px;">
+          <div><div class="inst-rij-label" style="color:var(--red-soft)">Reset dag</div><div class="inst-rij-sub">Wis voortgang van vandaag</div></div>
+          <button class="reset-btn" onclick="resetDag()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="navigeer('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Dag
+    </button>
+    <button class="nav-btn" id="nav-logboek" onclick="navigeer('logboek')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Logboek
+    </button>
+    <button class="nav-btn" id="nav-inst" onclick="navigeer('inst')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Instellingen
+    </button>
+  </nav>
+</div>
+
+<script>
+const EMOTIES = [
+  { emoji: '😰', naam: 'Bang',     schaal: ['Nerveus','Angstig','Paniek'] },
+  { emoji: '😢', naam: 'Bedroefd', schaal: ['Somber','Bedroefd','Wanhopig'] },
+  { emoji: '😠', naam: 'Boos',     schaal: ['Geïrriteerd','Boos','Woedend'] },
+  { emoji: '😊', naam: 'Blij',     schaal: ['Tevreden','Blij','Uitgelaten'] },
+  { emoji: '🤢', naam: 'Walging',  schaal: ['Ongemak','Walging','Afkeer'] },
+  { emoji: '😲', naam: 'Verrast',  schaal: ['Verrast','Geschokt','Overweldigd'] },
+  { emoji: '😌', naam: 'Kalm',     schaal: ['Ontspannen','Kalm','Vredig'] },
+];
+
+const FASES = [
+  { id:'ochtendrituelen', naam:'Ochtendrituelen', sectie:'Ochtend', kleur:'ochtend',
+    beschrijving:'Begin bij het lichaam. Volgorde maakt niet uit — wél dat het gedaan is.',
+    bijbel:{ tekst:'Des morgens zal Gij mijn stem horen; des morgens zal ik mij tot U wenden.', ref:'Psalm 5:4' },
+    type:'checklist', badge:'80% = door',
+    altijd:['Opstaan','Probiotica','Halve liter water','Visolie','Vitamine D3K2'],
+    optioneel:['Tandenpoetsen','Stokeren','Scheren','Wassen','Aankleden','Deodorant','Schoon ondergoed'] },
+  { id:'wandelen', naam:'Wandelen', sectie:'Ochtend', kleur:'ochtend',
+    beschrijving:'Lichte beweging als kalibratie. Geen doel, geen afstand. Gewoon buiten.',
+    bijbel:{ tekst:'En zij hoorden de stem van de Here God, die in de hof wandelde in de avondkoelte.', ref:'Genesis 3:8' },
+    type:'meting+notitie', notitieLabel:'Hoe voelde het buiten?' },
+  { id:'bevestiging', naam:'Rustmoment & bevestiging', sectie:'Ochtend', kleur:'ochtend',
+    beschrijving:'Niet opnieuw kiezen — de keuze van gisteravond bevestigen. Wat is het ene ding van vandaag?',
+    bijbel:{ tekst:'Stel uw werken in handen des Heren, en uw plannen zullen gelukken.', ref:'Spreuken 16:3' },
+    type:'notitie', notitieLabel:'Het ene ding van vandaag:' },
+  { id:'ochtendactiviteit', naam:'Ochtendactiviteit', sectie:'Ochtend', kleur:'ochtend',
+    beschrijving:'Het van tevoren gekozen ding. Concreet en specifiek.',
+    bijbel:{ tekst:'Alles wat uw hand vindt om te doen, doe het met uw ganse kracht.', ref:'Prediker 9:10' },
+    type:'wekker+meting+notitie', notitieLabel:'Wat deed ik, hoe voelde het?' },
+  { id:'ontbijt', naam:'Eerste maaltijd', sectie:'Ochtend', kleur:'eten',
+    beschrijving:'Wat at je? Noteer ook eventuele lichamelijke reacties achteraf.',
+    bijbel:{ tekst:'Hij gaf hun brood uit de hemel. Elke mens at het brood der machtigen.', ref:'Psalm 78:24-25' },
+    type:'eten', notitieLabel:'Wat at ik?' },
+  { id:'meditatie', naam:'Meditatie', sectie:'Ochtend', kleur:'ochtend',
+    beschrijving:'Overgang naar de middag. Niet als prestatie.',
+    bijbel:{ tekst:'Wees stil voor de Here en wacht op Hem.', ref:'Psalm 37:7' },
+    type:'meting+notitie', notitieLabel:'Hoe was de stilte?' },
+  { id:'middag1', naam:'Middagactiviteit 1', sectie:'Middag', kleur:'middag',
+    beschrijving:'Eerste gekozen ding. Van tevoren bepaald.',
+    bijbel:{ tekst:'De ziel van de vlijtige wordt overvloedig verzadigd.', ref:'Spreuken 13:4' },
+    type:'wekker+meting+notitie', notitieLabel:'Wat deed ik, hoe voelde het?' },
+  { id:'buffer', naam:'Korte buffer', sectie:'Middag', kleur:'middag',
+    beschrijving:'Even niets. Voordat het volgende begint.',
+    bijbel:{ tekst:'Er is een tijd om te zwijgen en een tijd om te spreken.', ref:'Prediker 3:7' },
+    type:'eenvoudig' },
+  { id:'middag2', naam:'Middagactiviteit 2', sectie:'Middag', kleur:'middag',
+    beschrijving:'Tweede gekozen ding. Ook van tevoren bepaald.',
+    bijbel:{ tekst:'Uw handen zijn sterk gemaakt; uw knieën zijn gesterkt.', ref:'Job 4:3-4' },
+    type:'wekker+meting+notitie', notitieLabel:'Wat deed ik, hoe voelde het?' },
+  { id:'avondeten', naam:'Avondmaaltijd', sectie:'Avond', kleur:'eten',
+    beschrijving:'Wat at je vanavond? Supplementen niet vergeten.',
+    bijbel:{ tekst:'En zij erkenden Hem aan het breken van het brood.', ref:'Lucas 24:35' },
+    type:'eten-avond', notitieLabel:'Wat at ik?' },
+  { id:'avondontspanning', naam:'Avondontspanning', sectie:'Avond', kleur:'avond',
+    beschrijving:'Muziek, lezen, film, gezin. Geen prestatie, geen doel.',
+    bijbel:{ tekst:'Ik ga te ruste en slaap in; ik word wakker, want de Here schraagt mij.', ref:'Psalm 3:6' },
+    type:'meting+notitie', notitieLabel:'Hoe was de avond?' },
+  { id:'evaluatie', naam:'Evaluatie & morgen', sectie:'Avond', kleur:'avond',
+    beschrijving:'Vijf minuten. Drie vragen, dan de wekker voor morgen.',
+    bijbel:{ tekst:'Onderzoek mij, o God, en ken mijn hart; toets mij en ken mijn gedachten.', ref:'Psalm 139:23' },
+    type:'evaluatie' },
+];
+
+const QUOTES = [
+  '"Slechts één ding is nodig" — Lc 10:42',
+  '"De Here zal voorzien" — Gen 22:14',
+  '"Ik heb je in mijn handpalmen gegrift" — Jes 49:16',
+  '"Zuiverheid van hart is slechts één ding willen" — Kierkegaard',
+  '"Wees stil en weet dat Ik God ben" — Ps 46:11',
+  '"Mijn genade is u genoeg" — 2 Kor 12:9',
+  '"In Hem leven wij, bewegen wij ons en zijn wij" — Hand 17:28',
+];
+
+let dagData = {}, huidigeFaseId = null, donkerModus = false;
+
+function vandaagKey() { return new Date().toISOString().split('T')[0]; }
+
+function laadData() {
+  try {
+    const d = localStorage.getItem('dagstructuur_v3');
+    if (d) dagData = JSON.parse(d);
+    if (localStorage.getItem('dagstructuur_donker') === '1') {
+      donkerModus = true; document.body.classList.add('donker');
+    }
+  } catch(e) {}
+}
+
+function slaOp() { localStorage.setItem('dagstructuur_v3', JSON.stringify(dagData)); }
+
+function vandaag() {
+  const k = vandaagKey();
+  if (!dagData[k]) dagData[k] = { fases: {} };
+  return dagData[k];
+}
+
+function getFase(id) {
+  const v = vandaag();
+  if (!v.fases[id]) v.fases[id] = { voltooid:false, checks:{}, notities:{}, energie:null, emotie:null, intensiteit:null, tijdstip:null };
+  return v.fases[id];
+}
+
+function toggleDonker() {
+  donkerModus = !donkerModus;
+  document.body.classList.toggle('donker', donkerModus);
+  localStorage.setItem('dagstructuur_donker', donkerModus ? '1' : '0');
+}
+
+function berekenVoortgang() {
+  const v = vandaag(); let n = 0;
+  FASES.forEach(f => { if (v.fases[f.id]?.voltooid) n++; });
+  return n;
+}
+
+function renderHome() {
+  document.getElementById('dagdatum').textContent = new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
+  document.getElementById('dagquote').textContent = QUOTES[new Date().getDay() % QUOTES.length];
+  const vol = berekenVoortgang();
+  document.getElementById('voortgang-fill').style.width = Math.round(vol/FASES.length*100) + '%';
+  document.getElementById('voortgang-tekst').textContent = `${vol} van ${FASES.length} fases voltooid`;
+  const container = document.getElementById('dag-blokken');
+  container.innerHTML = '';
+  let sectie = '';
+  FASES.forEach((fase, i) => {
+    if (fase.sectie !== sectie) {
+      sectie = fase.sectie;
+      const lbl = document.createElement('div');
+      lbl.className = 'blok-section'; lbl.textContent = sectie;
+      container.appendChild(lbl);
+    }
+    const fd = getFase(fase.id);
+    const actief = !fd.voltooid && FASES.slice(0,i).every(f => getFase(f.id).voltooid);
+    const blok = document.createElement('div');
+    blok.className = `blok fase-${fase.kleur}${fd.voltooid?' voltooid':''}${actief?' actief':''}`;
+    blok.onclick = () => toonFase(fase.id);
+    const meta = fd.tijdstip ? `<div class="blok-meta">${fd.tijdstip}${fd.energie !== null ? ' ' + ['😴','😔','😐','🙂','✨'][fd.energie] : ''}</div>` : (fase.badge ? `<div class="blok-meta">${fase.badge}</div>` : '');
+    blok.innerHTML = `<div class="blok-header"><div class="blok-num">${i+1}</div><div class="blok-info"><div class="blok-title">${fase.naam}</div>${meta}</div><div class="blok-status">${fd.voltooid?'✓':actief?'→':''}</div></div>`;
+    container.appendChild(blok);
+  });
+}
+
+function chk(id, item, checked, klasse) {
+  const safe = item.replace(/'/g,"\\'");
+  return `<div class="check-item ${klasse} ${checked?'checked':''}" onclick="toggleCheck('${id}','${safe}',this)"><div class="check-box ${checked?'checked':''}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div><span class="check-tekst">${item}</span></div>`;
+}
+
+function metingHtml(id, fd) {
+  const eEmoji = ['😴','😔','😐','🙂','✨'];
+  const eLabel = ['Uitgeput','Laag','Neutraal','Goed','Vitaal'];
+  let h = `<div class="meting-sectie"><span class="meting-label">Zenuwstelsel — hoe zit het er nu bij?</span><div class="energie-opties">`;
+  eEmoji.forEach((e,i) => { h += `<button class="energie-btn ${fd.energie===i?'selected':''}" onclick="slaEnergieOp('${id}',${i},this)">${e}</button>`; });
+  h += `</div><div class="energie-labels">`;
+  eLabel.forEach(l => { h += `<span>${l}</span>`; });
+  h += `</div></div><div class="emotie-sectie"><span class="meting-label">Welke emotie is het meest aanwezig?</span><div class="emotie-grid">`;
+  EMOTIES.forEach((em,i) => { h += `<button class="emotie-btn ${fd.emotie===i?'selected':''}" onclick="kiesEmotie('${id}',${i},this)">${em.emoji}<span>${em.naam}</span></button>`; });
+  h += `</div><div class="intensiteit-wrap ${fd.emotie!==null?'zichtbaar':''}" id="iw-${id}"><div class="intensiteit-rij">`;
+  if (fd.emotie !== null) {
+    EMOTIES[fd.emotie].schaal.forEach((s,i) => { h += `<button class="intensiteit-btn ${fd.intensiteit===i?'selected':''}" onclick="slaIntensiteitOp('${id}',${i},this)">${s}</button>`; });
+  }
+  h += `</div></div></div>`;
+  return h;
+}
+
+function toonFase(id) {
+  huidigeFaseId = id;
+  const fase = FASES.find(f => f.id === id);
+  const fd = getFase(id);
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-fase').classList.add('active');
+  const kleurMap = { ochtend:'#8b7355', middag:'#4a6741', avond:'#c45a4a', eten:'#c4882a' };
+  const bgMap = { ochtend:'#ede5d4', middag:'#ddecd8', avond:'#f5ddd8', eten:'#e8f0fa' };
+  const badge = document.getElementById('fase-badge');
+  badge.style.background = bgMap[fase.kleur]; badge.style.color = kleurMap[fase.kleur]; badge.textContent = fase.sectie;
+  const content = document.getElementById('fase-content');
+  let html = `<div class="fase-naam">${fase.naam}</div><div class="fase-beschrijving">${fase.beschrijving}</div>`;
+  if (fase.bijbel) html += `<div class="fase-bijbel">"${fase.bijbel.tekst}"<div class="fase-bijbel-ref">${fase.bijbel.ref}</div></div>`;
+
+  if (fase.type === 'checklist') {
+    html += `<div class="checklist-sectie"><span class="checklist-label" style="color:var(--green)">Altijd — niet overslaan</span>`;
+    fase.altijd.forEach(item => { html += chk(id, item, fd.checks[item]||false, 'altijd'); });
+    html += `</div><div class="checklist-sectie"><span class="checklist-label" style="color:var(--purple)">80% = door — twee mag je vergeten</span>`;
+    fase.optioneel.forEach(item => { html += chk(id, item, fd.checks[item]||false, 'optioneel'); });
+    html += `</div>`;
+  }
+
+  if (fase.type === 'eten' || fase.type === 'eten-avond') {
+    html += `<div class="notitie-sectie"><span class="notitie-label">${fase.notitieLabel}</span><textarea class="notitie-veld" placeholder="bijv. havermout, banaan..." onblur="slaNotitieOp('${id}','eten',this.value)">${fd.notities['eten']||''}</textarea></div>`;
+    if (fase.type === 'eten-avond') {
+      html += `<div class="checklist-sectie"><span class="checklist-label" style="color:var(--amber)">Supplementen avond</span>`;
+      ['Naturdao','Visolie','Magnesium Bisglycinaat'].forEach(item => { html += chk(id, item, fd.checks[item]||false, 'altijd'); });
+      html += `</div>`;
+    }
+    html += `<div class="notitie-sectie"><span class="notitie-label">Lichamelijke reactie achteraf (optioneel):</span><textarea class="notitie-veld" style="min-height:50px;" placeholder="bijv. moe, winderig, goed..." onblur="slaNotitieOp('${id}','reactie',this.value)">${fd.notities['reactie']||''}</textarea></div>`;
+  }
+
+  if (fase.type?.includes('wekker')) {
+    html += `<div class="wekker-sectie"><div class="wekker-label">⏰ Zet de wekker voor deze activiteit</div><div class="wekker-input"><input type="time" class="wekker-time" id="wekker-tijd" value="${fd.notities['wekker']||''}"><button class="wekker-zet" onclick="slaWekkerOp()">Instellen</button></div></div>`;
+  }
+
+  if (fase.type?.includes('meting') || fase.type === 'eenvoudig') {
+    html += metingHtml(id, fd);
+  }
+
+  if (fase.notitieLabel && fase.type !== 'eten' && fase.type !== 'eten-avond') {
+    html += `<div class="notitie-sectie"><span class="notitie-label">${fase.notitieLabel}</span><textarea class="notitie-veld" placeholder="..." onblur="slaNotitieOp('${id}','hoofd',this.value)">${fd.notities['hoofd']||''}</textarea></div>`;
+  }
+
+  if (fase.type === 'notitie') {
+    html += `<div class="notitie-sectie"><span class="notitie-label">${fase.notitieLabel}</span><textarea class="notitie-veld" placeholder="..." onblur="slaNotitieOp('${id}','hoofd',this.value)">${fd.notities['hoofd']||''}</textarea></div>`;
+  }
+
+  if (fase.type === 'evaluatie') {
+    [{ key:'v1', num:'1', tekst:'Wat deed ik vandaag?' },
+     { key:'v2', num:'2', tekst:'Wat is morgen het ene ding?' },
+     { key:'v3', num:'3', tekst:'Waaraan precies — welk boek, welk stuk, welke taak?' }].forEach(v => {
+      html += `<div class="avond-vraag"><div class="avond-vraag-num">Vraag ${v.num}</div><div class="avond-vraag-tekst">${v.tekst}</div><textarea class="notitie-veld" placeholder="..." onblur="slaNotitieOp('${id}','${v.key}',this.value)">${fd.notities[v.key]||''}</textarea></div>`;
+    });
+    html += `<div class="wekker-sectie"><div class="wekker-label">⏰ Wekker voor morgen</div><div class="wekker-input"><input type="time" class="wekker-time" id="wekker-morgen" value="${fd.notities['wekker-morgen']||''}"><button class="wekker-zet" onclick="slaWekkerMorgenOp()">Instellen</button></div></div>`;
+  }
+
+  const btnK = { ochtend:'klaar-btn-ochtend', middag:'klaar-btn-middag', avond:'klaar-btn-avond', eten:'klaar-btn-eten' }[fase.kleur];
+  html += `<button class="klaar-btn ${btnK}" onclick="markeerVoltooid('${id}')">${fd.voltooid ? '✓ Voltooid — klik om ongedaan te maken' : 'Markeer als gedaan →'}</button>`;
+  content.innerHTML = html;
+}
+
+function toggleCheck(faseId, item, el) {
+  const fd = getFase(faseId);
+  fd.checks[item] = !fd.checks[item]; slaOp();
+  el.classList.toggle('checked');
+  el.querySelector('.check-box').classList.toggle('checked');
+}
+
+function slaEnergieOp(faseId, waarde, el) {
+  getFase(faseId).energie = waarde; slaOp();
+  el.closest('.energie-opties').querySelectorAll('.energie-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function kiesEmotie(faseId, idx, el) {
+  const fd = getFase(faseId);
+  fd.emotie = idx; fd.intensiteit = null; slaOp();
+  el.closest('.emotie-grid').querySelectorAll('.emotie-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const wrap = document.getElementById(`iw-${faseId}`);
+  wrap.classList.add('zichtbaar');
+  wrap.querySelector('.intensiteit-rij').innerHTML = EMOTIES[idx].schaal.map((s,i) =>
+    `<button class="intensiteit-btn" onclick="slaIntensiteitOp('${faseId}',${i},this)">${s}</button>`).join('');
+}
+
+function slaIntensiteitOp(faseId, waarde, el) {
+  getFase(faseId).intensiteit = waarde; slaOp();
+  el.closest('.intensiteit-rij').querySelectorAll('.intensiteit-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function slaNotitieOp(faseId, key, waarde) { getFase(faseId).notities[key] = waarde; slaOp(); }
+
+function slaWekkerOp() {
+  const tijd = document.getElementById('wekker-tijd').value;
+  if (!tijd) return;
+  slaNotitieOp(huidigeFaseId, 'wekker', tijd);
+  const [h,m] = tijd.split(':');
+  const w = new Date(); w.setHours(parseInt(h), parseInt(m), 0);
+  if (w <= new Date()) w.setDate(w.getDate()+1);
+  setTimeout(() => { if (Notification.permission==='granted') new Notification('Dagstructuur', { body:'Tijd voor de volgende stap.' }); }, w - new Date());
+  alert(`Wekker ingesteld voor ${tijd}`);
+}
+
+function slaWekkerMorgenOp() {
+  const tijd = document.getElementById('wekker-morgen').value;
+  if (!tijd) return;
+  slaNotitieOp(huidigeFaseId, 'wekker-morgen', tijd);
+  alert(`Wekker voor morgen: ${tijd}`);
+}
+
+function markeerVoltooid(id) {
+  const fd = getFase(id);
+  fd.voltooid = !fd.voltooid;
+  fd.tijdstip = fd.voltooid ? new Date().toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' }) : null;
+  slaOp();
+  if (fd.voltooid) {
+    const idx = FASES.findIndex(f => f.id === id);
+    setTimeout(() => { idx < FASES.length-1 ? toonFase(FASES[idx+1].id) : toonHome(); }, 350);
+  } else {
+    toonFase(id);
+  }
+}
+
+function toonHome() {
+  document.getElementById('screen-fase').classList.remove('active');
+  document.getElementById('screen-home').classList.add('active');
+  renderHome();
+}
+
+function navigeer(scherm) {
+  ['home','logboek','inst'].forEach(s => {
+    document.getElementById(`screen-${s}`).classList.remove('active');
+    document.getElementById(`nav-${s}`)?.classList.remove('active');
+  });
+  document.getElementById('screen-fase').classList.remove('active');
+  document.getElementById(`screen-${scherm}`).classList.add('active');
+  document.getElementById(`nav-${scherm}`)?.classList.add('active');
+  if (scherm === 'logboek') renderLogboek();
+}
+
+function renderLogboek() {
+  const container = document.getElementById('logboek-content');
+  const dagen = Object.keys(dagData).sort().reverse();
+  if (!dagen.length) { container.innerHTML = '<div class="leeg-tekst">Nog geen dagen gelogd.</div>'; return; }
+  container.innerHTML = dagen.map(datum => {
+    const d = dagData[datum];
+    const datumStr = new Date(datum+'T12:00:00').toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
+    let items = '';
+    FASES.forEach(f => {
+      const fd = d.fases?.[f.id];
+      if (!fd?.voltooid) return;
+      const eStr = fd.energie !== null ? ['😴','😔','😐','🙂','✨'][fd.energie] : '';
+      const emStr = fd.emotie !== null ? EMOTIES[fd.emotie].emoji : '';
+      const inStr = fd.emotie !== null && fd.intensiteit !== null ? ` (${EMOTIES[fd.emotie].schaal[fd.intensiteit]})` : '';
+      items += `<div class="log-item"><strong>${f.naam}</strong>${fd.tijdstip?' · '+fd.tijdstip:''} ${eStr}${emStr}${inStr}</div>`;
+      if (fd.notities?.hoofd) items += `<div class="log-item" style="padding-left:10px;font-style:italic;">"${fd.notities.hoofd}"</div>`;
+      if (fd.notities?.eten) items += `<div class="log-item" style="padding-left:10px;">🍽 ${fd.notities.eten}</div>`;
+      if (fd.notities?.v2) items += `<div class="log-item" style="padding-left:10px;">→ Morgen: ${fd.notities.v2}</div>`;
+    });
+    return `<div class="log-dag"><div class="log-dag-datum">${datumStr}</div>${items||'<div class="log-item">Geen voltooide fases</div>'}</div>`;
+  }).join('');
+}
+
+function exporteerData() {
+  const blob = new Blob([JSON.stringify(dagData, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `dagstructuur_${vandaagKey()}.json`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function resetDag() {
+  if (confirm('Voortgang van vandaag wissen?')) {
+    delete dagData[vandaagKey()]; slaOp(); navigeer('home'); renderHome();
+  }
+}
+
+if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+laadData();
+renderHome();
+</script>
+</body>
+</html>
